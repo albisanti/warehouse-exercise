@@ -9,13 +9,23 @@ $response = ['status' => '', 'data' => []];
 $conn = connect_db();
 
 switch($action){
-    case 'getCategory':
+    case 'getCategories':
         $sql = "SELECT * FROM categories";
-        $result = mysqli_query($conn,$sql);
+
+        if(!empty($_REQUEST['term'])) {
+            $sql .= " WHERE name like ?";
+            $statement = mysqli_prepare($conn,$sql);
+            $_REQUEST['term'] = '%'.$_REQUEST['term'].'%';
+            mysqli_stmt_bind_param($statement,'s',($_REQUEST['term']));
+            mysqli_stmt_execute($statement);
+            $result = mysqli_stmt_get_result($statement);
+        } else {
+            $result = mysqli_query($conn,$sql);
+        }
         if(mysqli_num_rows($result) > 0) {
-            $response['status'] = 'OK';
+            $response = ['results' => []];
             while($row = mysqli_fetch_assoc($result)) {
-                $response['data'][] = $result;
+                $response['results'][] = ['id' => $row['id'], 'text' => $row['name']];
             }
         } else {
             $response['status'] = 'KO';

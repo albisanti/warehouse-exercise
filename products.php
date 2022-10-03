@@ -24,7 +24,7 @@ switch($action){
         break;
     case 'getSingleProduct':
         if(!empty($_POST['id'])) {
-            $sql = "SELECT * FROM products where id = ?";
+            $sql = "SELECT p.*, c.id as category_id, c.name as category_name FROM products p INNER JOIN categories c on category_id = c.id where p.id = ?";
             $statement = mysqli_prepare($conn,$sql);
             mysqli_stmt_bind_param($statement,'i',$_POST['id']);
             $rs = mysqli_stmt_execute($statement);
@@ -38,9 +38,9 @@ switch($action){
         break;
     case 'addProduct':
         if(!empty($_POST['code']) && !empty($_POST['name'])){
-            $sql = "INSERT INTO products(code, name, price, qta, image_name) values(?,?,?,?,?)";
+            $sql = "INSERT INTO products(code, name, price, qta, image_name,category_id) values(?,?,?,?,?,?)";
             $statement = mysqli_prepare($conn,$sql);
-            mysqli_stmt_bind_param($statement,'ssiis',$_POST['code'], $_POST['name'], $_POST['price'], $_POST['qta'], $_POST['image_name']);
+            mysqli_stmt_bind_param($statement,'ssiisi',$_POST['code'], $_POST['name'], $_POST['price'], $_POST['qta'], $_POST['image_name'],$_POST['category_id']);
             $rs = mysqli_stmt_execute($statement);
             $response['status'] = $rs ? 'OK' : 'KO';
             $id = $conn->insert_id;

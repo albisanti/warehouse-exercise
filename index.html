@@ -10,6 +10,7 @@
         integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
     <link href="https://unpkg.com/tabulator-tables@5.3.4/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         #modal-add-product {
             background-color: #fff;
@@ -74,6 +75,11 @@
                                     placeholder="Nome prodotto" />
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <select id="category-select" style="width: 100%;"></select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -119,6 +125,12 @@
                                     placeholder="Nome prodotto" />
                             </div>
                         </div>
+
+                        <div class="row mt-3">
+                            <div class="col">
+                                <select id="edit-category-select" style="width: 100%;"></select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -134,137 +146,136 @@
         <script src="https://code.jquery.com/jquery-3.6.1.min.js"
             integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
         <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
         <script>
+            $(document).ready(function(){
+                const PRODUCTS_BASE_URL = "products.php?";
+                const CATEGORIES_BASE_URL = "category.php?";
 
-            const PRODUCTS_BASE_URL = "products.php?";
-            var modalProduct = new bootstrap.Modal("#modal-add-product");
-            var modalViewEditProduct = new bootstrap.Modal('#modal-view-edit-product');
-            var table;
-
-
-
-            var deleteButton = function getButtons(cell, formatterParams, onRendered) {
-                let code = cell['_cell'].row.cells[0].value
-                return '<i class="bi bi-box-arrow-up-right openDetails" data-code="' + code + '"></i> <i class="bi bi-pencil-square edit" data-code="' + code + '"></i> <i class="bi bi-trash delete" data-code="' + code + '"></i>';
-            }
-
-            $.ajax({
-                method: "POST",
-                url: PRODUCTS_BASE_URL + "action=getProducts"
-            }).done(function (rs) {
-                try {
-                    rs = JSON.parse(rs);
-                    if (rs.status === 'OK') {
-                        table = new Tabulator('#product-table', {
-                            height: 200,
-                            data: rs.data,
-                            layout: "fitColumns",
-                            columns: [
-                                { title: "ID", field: "id", hide: true },
-                                { title: "Codice", field: "code", headerFilter: true },
-                                { title: "Nome", field: "name", headerFilter: true },
-                                { title: "Prezzo", field: "price" },
-                                { title: "Quantità", field: "qta" },
-                                { title: "Categoria", field: "category_name", headerFilter: true },
-                                {
-                                    title: "Azioni", formatter: deleteButton, cellClick: function (e, cell) {
-                                        let id = $(e.target).attr('data-code')
-                                        $('#saveEditProduct').attr('data-id',id);
-                                        if ($(e.target).hasClass("openDetails")) {
-
-                                            $.ajax({
-                                                method: 'POST',
-                                                url: PRODUCTS_BASE_URL+"action=getSingleProduct",
-                                                data: {id}
-                                            }).done(function(result){
-                                                try {
-                                                    result = JSON.parse(result);
-                                                    if (result.status === 'OK') {
-                                                        $('#viewEdit-code').val(result.data.code);
-                                                        $('#viewEdit-name').val(result.data.name);
-                                                        $('#viewEdit-price').val(result.data.price);
-                                                        $('#viewEdit-qta').val(result.data.qta);
-                                                    } else {
-                                                        alert("Non è stato trovato alcun prodotto")
-                                                    }
-                                                } catch (e) {
-                                                    alert("Errore nella ricezione della risposta: " + e);
-                                                }
-                                            });
-
-                                            $('.viewEdit').prop('disabled',true)
-                                            modalViewEditProduct.toggle();
-                                            $('#modal-view-edit-product-label').html('Visualizza prodotto');
-                                            $('#saveEditProduct').show();
-                                        } else if ($(e.target).hasClass("edit")) {
+                var modalProduct = new bootstrap.Modal("#modal-add-product");
+                var modalViewEditProduct = new bootstrap.Modal('#modal-view-edit-product');
+                var table;
 
 
-                                            $.ajax({
-                                                method: 'POST',
-                                                url: PRODUCTS_BASE_URL+"action=getSingleProduct",
-                                                data: {id}
-                                            }).done(function(result){
-                                                try {
-                                                    result = JSON.parse(result);
-                                                    if (result.status === 'OK') {
-                                                        $('#viewEdit-code').val(result.data.code);
-                                                        $('#viewEdit-name').val(result.data.name);
-                                                        $('#viewEdit-price').val(result.data.price);
-                                                        $('#viewEdit-qta').val(result.data.qta);
-                                                    } else {
-                                                        alert("Non è stato trovato alcun prodotto")
-                                                    }
-                                                } catch (e) {
-                                                    alert("Errore nella ricezione della risposta: " + e);
-                                                }
-                                            });
+                $('#category-select').select2({
+                    ajax: {
+                        url: CATEGORIES_BASE_URL+'action=getCategories',
+                        dataType: 'json'
+                    },
+                    dropdownParent: $('#modal-add-product')
+                })
 
-                                            $('.viewEdit').prop('disabled',false)
-                                            modalViewEditProduct.toggle();
-                                            $('#saveEditProduct').show();
-                                            $('#modal-view-edit-product-label').html('Modifica prodotto');
-                                        } else if ($(e.target).hasClass("delete")) {
-                                            if (confirm("Vuoi davvero cancellare il prodotto con codice " + id)) {
+                $('#edit-category-select').select2({
+                    ajax: {
+                        url: CATEGORIES_BASE_URL+'action=getCategories',
+                        dataType: 'json'
+                    },
+                    dropdownParent: $('#modal-view-edit-product')
+                })
+
+
+                var deleteButton = function getButtons(cell, formatterParams, onRendered) {
+                    let code = cell['_cell'].row.cells[0].value
+                    return '<i class="bi bi-box-arrow-up-right openDetails" data-code="' + code + '"></i> <i class="bi bi-pencil-square edit" data-code="' + code + '"></i> <i class="bi bi-trash delete" data-code="' + code + '"></i>';
+                }
+
+                $.ajax({
+                    method: "POST",
+                    url: PRODUCTS_BASE_URL + "action=getProducts"
+                }).done(function (rs) {
+                    try {
+                        rs = JSON.parse(rs);
+                        if (rs.status === 'OK') {
+                            table = new Tabulator('#product-table', {
+                                height: 200,
+                                data: rs.data,
+                                layout: "fitColumns",
+                                columns: [
+                                    { title: "ID", field: "id", hide: true },
+                                    { title: "Codice", field: "code", headerFilter: true },
+                                    { title: "Nome", field: "name", headerFilter: true },
+                                    { title: "Prezzo", field: "price" },
+                                    { title: "Quantità", field: "qta" },
+                                    { title: "Categoria", field: "category_name", headerFilter: true },
+                                    {
+                                        title: "Azioni", formatter: deleteButton, cellClick: function (e, cell) {
+                                            let id = $(e.target).attr('data-code')
+                                            $('#saveEditProduct').attr('data-id',id);
+                                            if ($(e.target).hasClass("openDetails")) {
+
                                                 $.ajax({
                                                     method: 'POST',
-                                                    url: PRODUCTS_BASE_URL + 'action=deleteProduct',
-                                                    data: { id: id }
-                                                }).done(function () {
-                                                    table.deleteRow(id)
-                                                })
+                                                    url: PRODUCTS_BASE_URL+"action=getSingleProduct",
+                                                    data: {id}
+                                                }).done(function(result){
+                                                    try {
+                                                        result = JSON.parse(result);
+                                                        if (result.status === 'OK') {
+                                                            $('#viewEdit-code').val(result.data.code);
+                                                            $('#viewEdit-name').val(result.data.name);
+                                                            $('#viewEdit-price').val(result.data.price);
+                                                            $('#viewEdit-qta').val(result.data.qta);
+                                                            var optionSelected = new Option(result.data.category_name,result.data.category_id,true,true);
+                                                            $('#edit-category-select').append(optionSelected).trigger('change');
+                                                        } else {
+                                                            alert("Non è stato trovato alcun prodotto")
+                                                        }
+                                                    } catch (e) {
+                                                        alert("Errore nella ricezione della risposta: " + e);
+                                                    }
+                                                });
+
+                                                $('.viewEdit').prop('disabled',true)
+                                                $('#edit-category-select').prop('disabled',true);
+                                                modalViewEditProduct.toggle();
+                                                $('#modal-view-edit-product-label').html('Visualizza prodotto');
+                                                $('#saveEditProduct').show();
+                                            } else if ($(e.target).hasClass("edit")) {
+
+
+                                                $.ajax({
+                                                    method: 'POST',
+                                                    url: PRODUCTS_BASE_URL+"action=getSingleProduct",
+                                                    data: {id}
+                                                }).done(function(result){
+                                                    try {
+                                                        result = JSON.parse(result);
+                                                        if (result.status === 'OK') {
+                                                            $('#viewEdit-code').val(result.data.code);
+                                                            $('#viewEdit-name').val(result.data.name);
+                                                            $('#viewEdit-price').val(result.data.price);
+                                                            $('#viewEdit-qta').val(result.data.qta);
+                                                            var optionSelected = new Option(result.data.category_name,result.data.category_id,true,true);
+                                                            $('#edit-category-select').append(optionSelected).trigger('change');
+                                                        } else {
+                                                            alert("Non è stato trovato alcun prodotto")
+                                                        }
+                                                    } catch (e) {
+                                                        alert("Errore nella ricezione della risposta: " + e);
+                                                    }
+                                                });
+
+                                                $('.viewEdit').prop('disabled',false)
+                                                $('#edit-category-select').prop('disabled',false);
+                                                modalViewEditProduct.toggle();
+                                                $('#saveEditProduct').show();
+                                                $('#modal-view-edit-product-label').html('Modifica prodotto');
+                                            } else if ($(e.target).hasClass("delete")) {
+                                                if (confirm("Vuoi davvero cancellare il prodotto con codice " + id)) {
+                                                    $.ajax({
+                                                        method: 'POST',
+                                                        url: PRODUCTS_BASE_URL + 'action=deleteProduct',
+                                                        data: { id: id }
+                                                    }).done(function () {
+                                                        table.deleteRow(id)
+                                                    })
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            ]
-                        })
-                    } else {
-                        alert(rs.data.error);
-                    }
-                } catch (e) {
-                    alert("Errore nella ricezione della risposta: " + e);
-                }
-            })
-
-            $('#saveEditProduct').on("click",function(){
-                let data = {
-                    id: $(this).attr('data-id'),
-                    code: $('#viewEdit-code').val(),
-                    name: $('#viewEdit-name').val(),
-                    price: $('#viewEdit-price').val(),
-                    qta: $('#viewEdit-qta').val()
-                }
-                $.ajax({
-                    method: 'POST',
-                    url: PRODUCTS_BASE_URL+'action=editProduct',
-                    data
-                }).done(function(rs){
-                    try{
-                        rs = JSON.parse(rs);
-                        if(rs.status === 'OK') {
-                            table.updateData([{id: data.id, code: data.code, name: data.name, price: data.price, qta: data.qta}]);
-                            modalViewEditProduct.toggle();
+                                ]
+                            })
                         } else {
                             alert(rs.data.error);
                         }
@@ -272,37 +283,67 @@
                         alert("Errore nella ricezione della risposta: " + e);
                     }
                 })
-            });
 
-            $('#saveProduct').on("click", function () {
-                let data = {
-                    code: $('#code').val(),
-                    name: $('#name').val(),
-                    price: $('#price').val(),
-                    qta: $('#qta').val()
-                }
-
-                $.ajax({
-                    method: "POST",
-                    url: PRODUCTS_BASE_URL + "action=addProduct",
-                    data
-                }).done(function (rs) {
-                    try {
-                        rs = JSON.parse(rs);
-                        if (rs.status === 'OK') {
-                            console.log(rs.data.id);
-                            modalProduct.toggle();
-                            table.addData([{ id: rs.data.id, code: data.code, name: data.name, price: data.price, qta: data.qta }], true)
-                        } else {
-                            alert("Errore nella creazione del prodotto: " + rs.data.error);
-                        }
-                    } catch (e) {
-                        alert("Errore nella ricezione della risposta: " + e);
+                $('#saveEditProduct').on("click",function(){
+                    let data = {
+                        id: $(this).attr('data-id'),
+                        code: $('#viewEdit-code').val(),
+                        name: $('#viewEdit-name').val(),
+                        price: $('#viewEdit-price').val(),
+                        qta: $('#viewEdit-qta').val()
                     }
+                    $.ajax({
+                        method: 'POST',
+                        url: PRODUCTS_BASE_URL+'action=editProduct',
+                        data
+                    }).done(function(rs){
+                        try{
+                            rs = JSON.parse(rs);
+                            if(rs.status === 'OK') {
+                                table.updateData([{id: data.id, code: data.code, name: data.name, price: data.price, qta: data.qta}]);
+                                modalViewEditProduct.toggle();
+                            } else {
+                                alert(rs.data.error);
+                            }
+                        } catch (e) {
+                            alert("Errore nella ricezione della risposta: " + e);
+                        }
+                    })
                 });
 
-            });
+                $('#saveProduct').on("click", function () {
+                    let data = {
+                        code: $('#code').val(),
+                        name: $('#name').val(),
+                        price: $('#price').val(),
+                        qta: $('#qta').val(),
+                        category_id: $('#category-select').val()
+                    }
 
+                    $.ajax({
+                        method: "POST",
+                        url: PRODUCTS_BASE_URL + "action=addProduct",
+                        data
+                    }).done(function (rs) {
+                        try {
+                            rs = JSON.parse(rs);
+                            if (rs.status === 'OK') {
+                                console.log(rs.data.id);
+                                modalProduct.toggle();
+                                //TODO: Return category after a check
+                                table.addData([{ id: rs.data.id, code: data.code, name: data.name, price: data.price, qta: data.qta }], true)
+                            } else {
+                                alert("Errore nella creazione del prodotto: " + rs.data.error);
+                            }
+                        } catch (e) {
+                            alert("Errore nella ricezione della risposta: " + e);
+                        }
+                    });
+
+                });
+
+            })
+            
         </script>
 
 </body>
