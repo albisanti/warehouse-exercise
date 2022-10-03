@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warehouse - Products</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
     <link href="https://unpkg.com/tabulator-tables@5.3.4/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <style>
         #modal-add-product {
             background-color: #fff;
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
@@ -20,15 +24,16 @@
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container mt-3">
 
         <div class="row">
-            <div class="col">
-                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#modal-add-product">Aggiungi prodotto</button>
+            <div class="col text-end">
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal"
+                    data-bs-target="#modal-add-product">Aggiungi prodotto</button>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mt-3">
             <div class="col">
                 <div id="product-table"></div>
             </div>
@@ -36,126 +41,270 @@
     </div>
 
     <!-- MODAL SECTION -->
-    <div class="modal fade" id="modal-add-product" tabindex="-1" aria-labelledby="modal-add-product-label" aria-hidden="true">
+    <div class="modal fade" id="modal-add-product" tabindex="-1" aria-labelledby="modal-add-product-label"
+        aria-hidden="true">
         <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="modal-add-product-label">Aggiungi nuovo prodotto</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-      
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <span>Codice prodotto</span> <br />
-                            <input type="text" class="form-control" id="code" placeholder="Codice prodotto" />
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-add-product-label">Aggiungi nuovo prodotto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <span>Codice prodotto</span> <br />
+                                <input type="text" class="form-control" id="code" placeholder="Codice prodotto" />
+                            </div>
+                            <div class="col-lg-6">
+                                <span>Nome prodotto</span> <br />
+                                <input type="text" class="form-control" id="name" placeholder="Nome prodotto" />
+                            </div>
                         </div>
-                        <div class="col-lg-6">
-                            <span>Nome prodotto</span> <br />
-                            <input type="text" class="form-control" id="name" placeholder="Nome prodotto" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <span>Prezzo</span> <br />
-                            <input type="number" min="0" step="0.01" id="price" class="form-control" placeholder="Prezzo" />
-                        </div>
-                        <div class="col-lg-6">
-                            <span>Quantit&agrave;</span> <br />
-                            <input type="number" min="0" class="form-control" id="qta" placeholder="Nome prodotto" />
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <span>Prezzo</span> <br />
+                                <input type="number" min="0" step="0.01" id="price" class="form-control"
+                                    placeholder="Prezzo" />
+                            </div>
+                            <div class="col-lg-6">
+                                <span>Quantit&agrave;</span> <br />
+                                <input type="number" min="0" class="form-control" id="qta"
+                                    placeholder="Nome prodotto" />
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="saveProduct">Salva prodotto</button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                <button type="button" class="btn btn-primary" id="saveProduct">Salva prodotto</button>
-              </div>        
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
+    <div class="modal fade" id="modal-view-edit-product" tabindex="-1" aria-labelledby="modal-view-edit-product-label"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-view-edit-product-label">Visualizza prodotto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
 
-    <script>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <span>Codice prodotto</span> <br />
+                                <input type="text" class="form-control viewEdit" id="viewEdit-code"
+                                    placeholder="Codice prodotto" />
+                            </div>
+                            <div class="col-lg-6">
+                                <span>Nome prodotto</span> <br />
+                                <input type="text" class="form-control viewEdit" id="viewEdit-name"
+                                    placeholder="Nome prodotto" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <span>Prezzo</span> <br />
+                                <input type="number" min="0" step="0.01" id="viewEdit-price" class="form-control viewEdit"
+                                    placeholder="Prezzo" />
+                            </div>
+                            <div class="col-lg-6">
+                                <span>Quantit&agrave;</span> <br />
+                                <input type="number" min="0" class="form-control viewEdit" id="viewEdit-qta"
+                                    placeholder="Nome prodotto" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" class="btn btn-primary" id="saveEditProduct">Salva prodotto</button>
+                </div>
+            </div>
+        </div>
 
-        const PRODUCTS_BASE_URL = "products.php?";
-        var modalProduct = new bootstrap.Modal("#modal-add-product");
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+            crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+            integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
+
+        <script>
+
+            const PRODUCTS_BASE_URL = "products.php?";
+            var modalProduct = new bootstrap.Modal("#modal-add-product");
+            var modalViewEditProduct = new bootstrap.Modal('#modal-view-edit-product');
+            var table;
 
 
-        $.ajax({
-            method: "POST",
-            url: PRODUCTS_BASE_URL+"action=getProducts"
-        }).done(function(rs) {
-            try {
-                rs = JSON.parse(rs);
-                if(rs.status === 'OK') {
-                    var table = new Tabulator('#product-table', {
-                        height: 200,
-                        data: rs.data,
-                        layout: "fitColumns",
-                        columns: [
-                            {title: "Codice", field: "code", headerFilter: true},
-                            {title: "Nome", field: "name", headerFilter: true},
-                            {title: "Prezzo", field: "price"},
-                            {title: "Quantità", field: "qta"},
-                        ]
-                    })
-                } else {
-                    alert(rs.data.error);
-                }
-            } catch(e){
-                alert("Errore nella ricezione della risposta: "+e);
-            }
-        })
 
-        $('#saveProduct').on("click",function(){
-            let data = {
-                code: $('#code').val(),
-                name: $('#name').val(),
-                price: $('#price').val(),
-                qta: $('#qta').val()
+            var deleteButton = function getButtons(cell, formatterParams, onRendered) {
+                let code = cell['_cell'].row.cells[0].value
+                return '<i class="bi bi-box-arrow-up-right openDetails" data-code="' + code + '"></i> <i class="bi bi-pencil-square edit" data-code="' + code + '"></i> <i class="bi bi-trash delete" data-code="' + code + '"></i>';
             }
 
             $.ajax({
                 method: "POST",
-                url: PRODUCTS_BASE_URL+"action=addProduct",
-                data
-            }).done(function(rs){
-                try{
+                url: PRODUCTS_BASE_URL + "action=getProducts"
+            }).done(function (rs) {
+                try {
                     rs = JSON.parse(rs);
-                    if(rs.status === 'OK') {
-                        modalProduct.toggle();
+                    if (rs.status === 'OK') {
+                        table = new Tabulator('#product-table', {
+                            height: 200,
+                            data: rs.data,
+                            layout: "fitColumns",
+                            columns: [
+                                { title: "ID", field: "id", hide: true },
+                                { title: "Codice", field: "code", headerFilter: true },
+                                { title: "Nome", field: "name", headerFilter: true },
+                                { title: "Prezzo", field: "price" },
+                                { title: "Quantità", field: "qta" },
+                                { title: "Categoria", field: "category_name", headerFilter: true },
+                                {
+                                    title: "Azioni", formatter: deleteButton, cellClick: function (e, cell) {
+                                        let id = $(e.target).attr('data-code')
+                                        $('#saveEditProduct').attr('data-id',id);
+                                        if ($(e.target).hasClass("openDetails")) {
+
+                                            $.ajax({
+                                                method: 'POST',
+                                                url: PRODUCTS_BASE_URL+"action=getSingleProduct",
+                                                data: {id}
+                                            }).done(function(result){
+                                                try {
+                                                    result = JSON.parse(result);
+                                                    if (result.status === 'OK') {
+                                                        $('#viewEdit-code').val(result.data.code);
+                                                        $('#viewEdit-name').val(result.data.name);
+                                                        $('#viewEdit-price').val(result.data.price);
+                                                        $('#viewEdit-qta').val(result.data.qta);
+                                                    } else {
+                                                        alert("Non è stato trovato alcun prodotto")
+                                                    }
+                                                } catch (e) {
+                                                    alert("Errore nella ricezione della risposta: " + e);
+                                                }
+                                            });
+
+                                            $('.viewEdit').prop('disabled',true)
+                                            modalViewEditProduct.toggle();
+                                            $('#modal-view-edit-product-label').html('Visualizza prodotto');
+                                            $('#saveEditProduct').show();
+                                        } else if ($(e.target).hasClass("edit")) {
+
+
+                                            $.ajax({
+                                                method: 'POST',
+                                                url: PRODUCTS_BASE_URL+"action=getSingleProduct",
+                                                data: {id}
+                                            }).done(function(result){
+                                                try {
+                                                    result = JSON.parse(result);
+                                                    if (result.status === 'OK') {
+                                                        $('#viewEdit-code').val(result.data.code);
+                                                        $('#viewEdit-name').val(result.data.name);
+                                                        $('#viewEdit-price').val(result.data.price);
+                                                        $('#viewEdit-qta').val(result.data.qta);
+                                                    } else {
+                                                        alert("Non è stato trovato alcun prodotto")
+                                                    }
+                                                } catch (e) {
+                                                    alert("Errore nella ricezione della risposta: " + e);
+                                                }
+                                            });
+
+                                            $('.viewEdit').prop('disabled',false)
+                                            modalViewEditProduct.toggle();
+                                            $('#saveEditProduct').show();
+                                            $('#modal-view-edit-product-label').html('Modifica prodotto');
+                                        } else if ($(e.target).hasClass("delete")) {
+                                            if (confirm("Vuoi davvero cancellare il prodotto con codice " + id)) {
+                                                $.ajax({
+                                                    method: 'POST',
+                                                    url: PRODUCTS_BASE_URL + 'action=deleteProduct',
+                                                    data: { id: id }
+                                                }).done(function () {
+                                                    table.deleteRow(id)
+                                                })
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        })
                     } else {
-                        alert("Errore nella creazione del prodotto: "+rs.data.error);
+                        alert(rs.data.error);
                     }
-                } catch(e) {
-                    alert("Errore nella ricezione della risposta: "+e);
+                } catch (e) {
+                    alert("Errore nella ricezione della risposta: " + e);
                 }
+            })
+
+            $('#saveEditProduct').on("click",function(){
+                let data = {
+                    id: $(this).attr('data-id'),
+                    code: $('#viewEdit-code').val(),
+                    name: $('#viewEdit-name').val(),
+                    price: $('#viewEdit-price').val(),
+                    qta: $('#viewEdit-qta').val()
+                }
+                $.ajax({
+                    method: 'POST',
+                    url: PRODUCTS_BASE_URL+'action=editProduct',
+                    data
+                }).done(function(rs){
+                    try{
+                        rs = JSON.parse(rs);
+                        if(rs.status === 'OK') {
+                            table.updateData([{id: data.id, code: data.code, name: data.name, price: data.price, qta: data.qta}]);
+                            modalViewEditProduct.toggle();
+                        } else {
+                            alert(rs.data.error);
+                        }
+                    } catch (e) {
+                        alert("Errore nella ricezione della risposta: " + e);
+                    }
+                })
             });
 
-        });
+            $('#saveProduct').on("click", function () {
+                let data = {
+                    code: $('#code').val(),
+                    name: $('#name').val(),
+                    price: $('#price').val(),
+                    qta: $('#qta').val()
+                }
 
-        // table.on("tableBuilt", function(){
+                $.ajax({
+                    method: "POST",
+                    url: PRODUCTS_BASE_URL + "action=addProduct",
+                    data
+                }).done(function (rs) {
+                    try {
+                        rs = JSON.parse(rs);
+                        if (rs.status === 'OK') {
+                            console.log(rs.data.id);
+                            modalProduct.toggle();
+                            table.addData([{ id: rs.data.id, code: data.code, name: data.name, price: data.price, qta: data.qta }], true)
+                        } else {
+                            alert("Errore nella creazione del prodotto: " + rs.data.error);
+                        }
+                    } catch (e) {
+                        alert("Errore nella ricezione della risposta: " + e);
+                    }
+                });
 
-        //     // table.setFilter([
-        //     //     [
-        //     //         {field: "name", type:"like", value: $('#searchInput').val()},
-        //     //         {field: "category", type:"like", value: $('#searchInput').val()},
-        //     //     ]
-        //     // ])
+            });
 
-        //     // $('#searchInput').on("keyup", function(){
-        //     //     table.refreshFilter();
-        //     // })
-        //     table.setFilter([
-        //         {title: "name", field: "name", headerFilter: "input", headerFilterLiveFilter: true}
-        //     ]);
-        // })
-
-    </script>
+        </script>
 
 </body>
+
 </html>
