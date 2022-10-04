@@ -10,11 +10,12 @@ $conn = connect_db();
 
 switch($action){
     case 'getProducts':
-        $sql = "SELECT p.*,c.name as category_name FROM products p INNER JOIN categories c on category_id = c.id";
+        $sql = "SELECT p.*,c.name as category_name FROM products p INNER JOIN categories c on category_id = c.id order by p.id";
         $result = mysqli_query($conn,$sql);
         if(mysqli_num_rows($result) > 0) {
             $response['status'] = 'OK';
             while($row = mysqli_fetch_assoc($result)) {
+                $row['price'] = number_format($row['price']/100,2,',','.');
                 $response['data'][] = $row;
             }
         } else {
@@ -30,6 +31,7 @@ switch($action){
             $rs = mysqli_stmt_execute($statement);
             $rsArray = mysqli_fetch_assoc(mysqli_stmt_get_result($statement));
             $response['status'] = !empty($rs) ? 'OK' : 'KO';
+            $rsArray['price'] = number_format($rsArray['price']/100,2,',','.');
             $response['data'] = $rsArray;
         } else {
             $response['status'] = 'KO';
@@ -50,6 +52,8 @@ switch($action){
             $sql = "INSERT INTO products(code, name, price, qta, image_name,category_id) values(?,?,?,?,?,?)";
             $statement = mysqli_prepare($conn,$sql);
             $image_name_db = $fileToUpload ? $image_name.'.'.$fileType : null;
+            $_POST['price'] = strpos($_POST['price'],',') > 0 ? str_replace(',','.',$_POST['price']) : $_POST['price'];
+            $_POST['price'] = $_POST['price']*100;
             mysqli_stmt_bind_param($statement,'ssiisi',$_POST['code'], $_POST['name'], $_POST['price'], $_POST['qta'], $image_name_db, $_POST['category_id']);
             $rs = mysqli_stmt_execute($statement);
             if($rs && $fileToUpload){
@@ -103,12 +107,12 @@ switch($action){
 
                 $statement = mysqli_prepare($conn,$sql);
                 $image_name_db = $fileToUpload ? $image_name.'.'.$fileType : $rsCheckArray['image_name'];
+                $_POST['price'] = strpos($_POST['price'],',') > 0 ? str_replace(',','.',$_POST['price']) : $_POST['price'];
+                $_POST['price'] = $_POST['price']*100;
                 mysqli_stmt_bind_param($statement,'ssiisii',$_POST['code'],$_POST['name'],$_POST['price'],$_POST['qta'],$image_name_db,$_POST['category_id'],$_POST['id']);
                 $rs = mysqli_stmt_execute($statement);
 
                 if($rs && $fileToUpload){
-                    $id = $conn->insert_id;
-                    $response['data']['id'] = $id;
                     if(move_uploaded_file($_FILES['image']['tmp_name'],$targetDir.$image_name.'.'.$fileType)) {
                         $response['status'] = 'OK';
                     } else {
@@ -116,8 +120,6 @@ switch($action){
                         $response['data']['error'] = "Prodotto inserito. Il caricamento dell'immagine ha avuto dei problemi.";
                     }
                 } elseif($rs) {
-                    $id = $conn->insert_id;
-                    $response['data']['id'] = $id;
                     $response['status'] = 'OK';
                 } else {
                     $response['status'] = 'KO';

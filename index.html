@@ -208,7 +208,7 @@
                                 data: rs.data,
                                 layout: "fitColumns",
                                 columns: [
-                                    { title: "ID", field: "id", hide: true },
+                                    { title: "ID", field: "id" },
                                     { title: "Codice", field: "code", headerFilter: true },
                                     { title: "Nome", field: "name", headerFilter: true },
                                     { title: "Prezzo", field: "price" },
@@ -319,8 +319,9 @@
                 })
 
                 $('#saveEditProduct').on("click",function(){
+                    var id = $(this).attr('data-id');
                     let formData = new FormData();
-                    formData.append('id',$(this).attr('data-id'));
+                    formData.append('id',id);
                     formData.append('code',$('#viewEdit-code').val());
                     formData.append('name',$('#viewEdit-name').val());
                     formData.append('price',$('#viewEdit-price').val());
@@ -338,11 +339,12 @@
                             rs = JSON.parse(rs);
                             if(rs.status === 'OK') {
                                 table.updateData([{
-                                    id: $(this).attr('data-id'), 
+                                    id: id, 
                                     code: $('#viewEdit-code').val(), 
                                     name: $('#viewEdit-name').val(), 
-                                    price: $('#viewEdit-price').val(), 
-                                    qta: $('#viewEdit-qta').val()
+                                    price: parseFloat($('#viewEdit-price').val()).toFixed(2).replace('.',','), 
+                                    qta: $('#viewEdit-qta').val(),
+                                    category_name: $('#edit-category-select').select2('data')[0].text
                                 }]);
                                 modalViewEditProduct.toggle();
                             } else {
@@ -383,8 +385,9 @@
                                     id: rs.data.id, 
                                     code: $('#code').val(), 
                                     name: $('#name').val(), 
-                                    price: $('#price').val(), 
-                                    qta: $('#qta').val() 
+                                    price: parseFloat($('#price').val()).toFixed(2).replace('.',','), 
+                                    qta: $('#qta').val(),
+                                    category_name: $('#category-select').select2('data')[0].text
                                 }], true)
                             } else {
                                 alert("Errore nella creazione del prodotto: " + rs.data.error);
