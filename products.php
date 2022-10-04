@@ -136,11 +136,26 @@ switch($action){
 
     case 'deleteProduct':
         if(!empty($_POST['id'])) {
-            $sql = "DELETE FROM products where id = ?";
-            $statement = mysqli_prepare($conn,$sql);
+            $sqlCheck = "select * from products where id = ?";
+            $statement = mysqli_prepare($conn,$sqlCheck);
             mysqli_stmt_bind_param($statement,'i',$_POST['id']);
-            $rs = mysqli_stmt_execute($statement);
-            $response['status'] = $rs ? 'OK' : 'KO';
+            $rsCheck = mysqli_stmt_execute($statement);
+            $rsCheckArray = mysqli_fetch_assoc(mysqli_stmt_get_result($statement));
+            if($rsCheck){
+                if(!empty($rsCheckArray['image_name'])) {
+                    if(file_exists('product_images/'.$rsCheckArray['image_name'])) {
+                        unlink('product_images/'.$rsCheckArray['image_name']);
+                    }
+                }
+                $sql = "DELETE FROM products where id = ?";
+                $statement = mysqli_prepare($conn,$sql);
+                mysqli_stmt_bind_param($statement,'i',$_POST['id']);
+                $rs = mysqli_stmt_execute($statement);
+                $response['status'] = $rs ? 'OK' : 'KO';
+            } else {
+                $response['status'] = 'KO';
+                $response['data']['error'] = "Non è stato trovato il prodotto da eliminare";
+            }
         } else {
             $response['status'] = 'KO';
             $response['data']['error'] = "Non è stato fornito un ID valido per la categoria";
