@@ -38,13 +38,37 @@ switch($action){
         break;
     case 'addProduct':
         if(!empty($_POST['code']) && !empty($_POST['name'])){
+            $fileToUpload = false;
+            if(!empty($_FILES['image'])){
+                $fileType = pathinfo($_FILES['image']['name'],PATHINFO_EXTENSION);
+                if(in_array($fileType,['jpg','png','jpeg'])) {
+                    $targetDir = 'product_images/';
+                    $image_name = strtolower(str_replace(' ','_',$_POST['code']));
+                    $fileToUpload = true;
+                }
+            }
             $sql = "INSERT INTO products(code, name, price, qta, image_name,category_id) values(?,?,?,?,?,?)";
             $statement = mysqli_prepare($conn,$sql);
-            mysqli_stmt_bind_param($statement,'ssiisi',$_POST['code'], $_POST['name'], $_POST['price'], $_POST['qta'], $_POST['image_name'],$_POST['category_id']);
+            $image_name_db = $fileToUpload ? $image_name.'.'.$fileType : null;
+            mysqli_stmt_bind_param($statement,'ssiisi',$_POST['code'], $_POST['name'], $_POST['price'], $_POST['qta'], $image_name_db, $_POST['category_id']);
             $rs = mysqli_stmt_execute($statement);
-            $response['status'] = $rs ? 'OK' : 'KO';
-            $id = $conn->insert_id;
-            $response['data']['id'] = $id;
+            if($rs && $fileToUpload){
+                $id = $conn->insert_id;
+                $response['data']['id'] = $id;
+                if(move_uploaded_file($_FILES['image']['tmp_name'],$targetDir.$image_name.'.'.$fileType)) {
+                    $response['status'] = 'OK';
+                } else {
+                    $response['status'] = 'KO';
+                    $response['data']['error'] = "Prodotto inserito. Il caricamento dell'immagine ha avuto dei problemi.";
+                }
+            } elseif($rs) {
+                $id = $conn->insert_id;
+                $response['data']['id'] = $id;
+                $response['status'] = 'OK';
+            } else {
+                $response['status'] = 'KO';
+                $response['data']['error'] = "Prodotto non inserito. Si prega di riprovare";
+            }
         } else {
             $response['status'] = 'KO';
             $response['data']['error'] = "Non è stato fornito un codice o un nome per il prodotto";
@@ -53,11 +77,57 @@ switch($action){
 
     case 'editProduct':
         if(!empty($_POST['id'])) {
-            $sql = "UPDATE products SET code = ?, name = ?, price = ?, qta = ? where id = ?";
-            $statement = mysqli_prepare($conn,$sql);
-            mysqli_stmt_bind_param($statement,'ssiii',$_POST['code'],$_POST['name'],$_POST['price'],$_POST['qta'],$_POST['id']);
-            $rs = mysqli_stmt_execute($statement);
-            $response['status'] = $rs ? 'OK' : 'KO';
+            $sqlCheck = "select * from products where id = ?";
+            $statement = mysqli_prepare($conn,$sqlCheck);
+            mysqli_stmt_bind_param($statement,'i',$_POST['id']);
+            $rsCheck = mysqli_stmt_execute($statement);
+            $rsCheckArray = mysqli_fetch_assoc(mysqli_stmt_get_result($statement));
+            if($rsCheck) {
+                $sql = "UPDATE products SET code = ?, name = ?, price = ?, qta = ?, image_name = ?, category_id = ? where id = ?";
+            
+                $fileToUpload = false;
+                if(!empty($_FILES['image'])){
+                    $fileType = pathinfo($_FILES['image']['name'],PATHINFO_EXTENSION);
+                    if(in_array($fileType,['jpg','png','jpeg'])) {
+                        $targetDir = 'product_images/';
+                        $image_name = strtolower(str_replace(' ','_',$_POST['code']));
+                        $fileToUpload = true;
+                    }
+                }
+    
+                if(!empty($rsCheckArray['image_name']) && $fileToUpload){
+                    if(file_exists('product_images/'.$rsCheckArray['image_name'])) {
+                        unlink('product_images/'.$rsCheckArray['image_name']);
+                    }
+                }
+
+                $statement = mysqli_prepare($conn,$sql);
+                $image_name_db = $fileToUpload ? $image_name.'.'.$fileType : $rsCheckArray['image_name'];
+                mysqli_stmt_bind_param($statement,'ssiisii',$_POST['code'],$_POST['name'],$_POST['price'],$_POST['qta'],$image_name_db,$_POST['category_id'],$_POST['id']);
+                $rs = mysqli_stmt_execute($statement);
+
+                if($rs && $fileToUpload){
+                    $id = $conn->insert_id;
+                    $response['data']['id'] = $id;
+                    if(move_uploaded_file($_FILES['image']['tmp_name'],$targetDir.$image_name.'.'.$fileType)) {
+                        $response['status'] = 'OK';
+                    } else {
+                        $response['status'] = 'KO';
+                        $response['data']['error'] = "Prodotto inserito. Il caricamento dell'immagine ha avuto dei problemi.";
+                    }
+                } elseif($rs) {
+                    $id = $conn->insert_id;
+                    $response['data']['id'] = $id;
+                    $response['status'] = 'OK';
+                } else {
+                    $response['status'] = 'KO';
+                    $response['data']['error'] = "Prodotto non inserito. Si prega di riprovare";
+                }
+
+            } else {
+                $response['status'] = 'KO';
+                $response['data']['error'] = "Non è stato trovato il prodotto da aggiornare";
+            }
         } else {
             $response['status'] = 'KO';
             $response['data']['error'] = "Non è stato fornito l'ID per completare l'operazione";

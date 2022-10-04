@@ -80,6 +80,11 @@
                                 <select id="category-select" style="width: 100%;"></select>
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <input type="file" id="image-upload" style="width: 100%;" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -101,6 +106,11 @@
                 <div class="modal-body">
 
                     <div class="container-fluid">
+                        <div class="row">
+                            <div class="col">
+                                <img src="" id="viewEdit-image" height="100px" width="100px" />
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-lg-6">
                                 <span>Codice prodotto</span> <br />
@@ -129,6 +139,12 @@
                         <div class="row mt-3">
                             <div class="col">
                                 <select id="edit-category-select" style="width: 100%;"></select>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col">
+                                <input type="file" id="edit-upload-image" style="width: 100%;" />
                             </div>
                         </div>
                     </div>
@@ -216,6 +232,14 @@
                                                             $('#viewEdit-name').val(result.data.name);
                                                             $('#viewEdit-price').val(result.data.price);
                                                             $('#viewEdit-qta').val(result.data.qta);
+
+                                                            if(result.data.image_name !== "" && result.data.image_name !== null) {
+                                                                $('#viewEdit-image').show();
+                                                                $('#viewEdit-image').attr('src','product_images/'+result.data.image_name);
+                                                            } else {
+                                                                $('#viewEdit-image').hide();
+                                                            }
+
                                                             var optionSelected = new Option(result.data.category_name,result.data.category_id,true,true);
                                                             $('#edit-category-select').append(optionSelected).trigger('change');
                                                         } else {
@@ -230,7 +254,8 @@
                                                 $('#edit-category-select').prop('disabled',true);
                                                 modalViewEditProduct.toggle();
                                                 $('#modal-view-edit-product-label').html('Visualizza prodotto');
-                                                $('#saveEditProduct').show();
+                                                $('#saveEditProduct').hide();
+                                                $('#edit-upload-image').hide();
                                             } else if ($(e.target).hasClass("edit")) {
 
 
@@ -246,6 +271,14 @@
                                                             $('#viewEdit-name').val(result.data.name);
                                                             $('#viewEdit-price').val(result.data.price);
                                                             $('#viewEdit-qta').val(result.data.qta);
+
+                                                            if(result.data.image_name !== "" && result.data.image_name !== null) {
+                                                                $('#viewEdit-image').show();
+                                                                $('#viewEdit-image').attr('src','product_images/'+result.data.image_name);
+                                                            } else {
+                                                                $('#viewEdit-image').hide();
+                                                            }
+
                                                             var optionSelected = new Option(result.data.category_name,result.data.category_id,true,true);
                                                             $('#edit-category-select').append(optionSelected).trigger('change');
                                                         } else {
@@ -260,6 +293,7 @@
                                                 $('#edit-category-select').prop('disabled',false);
                                                 modalViewEditProduct.toggle();
                                                 $('#saveEditProduct').show();
+                                                $('#edit-upload-image').show();
                                                 $('#modal-view-edit-product-label').html('Modifica prodotto');
                                             } else if ($(e.target).hasClass("delete")) {
                                                 if (confirm("Vuoi davvero cancellare il prodotto con codice " + id)) {
@@ -285,53 +319,73 @@
                 })
 
                 $('#saveEditProduct').on("click",function(){
-                    let data = {
-                        id: $(this).attr('data-id'),
-                        code: $('#viewEdit-code').val(),
-                        name: $('#viewEdit-name').val(),
-                        price: $('#viewEdit-price').val(),
-                        qta: $('#viewEdit-qta').val()
-                    }
+                    let formData = new FormData();
+                    formData.append('id',$(this).attr('data-id'));
+                    formData.append('code',$('#viewEdit-code').val());
+                    formData.append('name',$('#viewEdit-name').val());
+                    formData.append('price',$('#viewEdit-price').val());
+                    formData.append('qta',$('#viewEdit-qta').val());
+                    formData.append('category_id',$('#edit-category-select').val());
+                    formData.append('image',$('#edit-upload-image').prop('files')[0]);
                     $.ajax({
                         method: 'POST',
                         url: PRODUCTS_BASE_URL+'action=editProduct',
-                        data
+                        processData: false,
+                        contentType: false,
+                        data: formData
                     }).done(function(rs){
                         try{
                             rs = JSON.parse(rs);
                             if(rs.status === 'OK') {
-                                table.updateData([{id: data.id, code: data.code, name: data.name, price: data.price, qta: data.qta}]);
+                                table.updateData([{
+                                    id: $(this).attr('data-id'), 
+                                    code: $('#viewEdit-code').val(), 
+                                    name: $('#viewEdit-name').val(), 
+                                    price: $('#viewEdit-price').val(), 
+                                    qta: $('#viewEdit-qta').val()
+                                }]);
                                 modalViewEditProduct.toggle();
                             } else {
                                 alert(rs.data.error);
                             }
                         } catch (e) {
                             alert("Errore nella ricezione della risposta: " + e);
+                        } finally {
+                            $('#edit-upload-image').val('')
                         }
                     })
                 });
 
                 $('#saveProduct').on("click", function () {
-                    let data = {
-                        code: $('#code').val(),
-                        name: $('#name').val(),
-                        price: $('#price').val(),
-                        qta: $('#qta').val(),
-                        category_id: $('#category-select').val()
-                    }
+                    let formData = new FormData();
+                    formData.append('code',$('#code').val());
+                    formData.append('name',$('#name').val());
+                    formData.append('price',$('#price').val());
+                    formData.append('qta',$('#qta').val());
+                    formData.append('category_id',$('#category-select').val());
+                    formData.append('image',$('#image-upload').prop('files')[0]);
 
                     $.ajax({
                         method: "POST",
                         url: PRODUCTS_BASE_URL + "action=addProduct",
-                        data
+                        processData: false,
+                        contentType: false,
+                        data: formData
                     }).done(function (rs) {
                         try {
                             rs = JSON.parse(rs);
+                            console.log(rs);
                             if (rs.status === 'OK') {
                                 console.log(rs.data.id);
                                 modalProduct.toggle();
                                 //TODO: Return category after a check
-                                table.addData([{ id: rs.data.id, code: data.code, name: data.name, price: data.price, qta: data.qta }], true)
+                                table.addData([{ 
+                                    id: rs.data.id, 
+                                    code: $('#code').val(), 
+                                    name: $('#name').val(), 
+                                    price: $('#price').val(), 
+                                    qta: $('#qta').val() 
+                                }], true)
                             } else {
                                 alert("Errore nella creazione del prodotto: " + rs.data.error);
                             }
